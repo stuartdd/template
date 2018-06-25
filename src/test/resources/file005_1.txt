@@ -1,0 +1,1 @@
+ Line %{num} of %{numberOfLines} : %{lineText}. Note an EOL is at the end of this file
