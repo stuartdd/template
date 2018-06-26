@@ -45,7 +45,7 @@ import java.util.Properties;
  * for the parameter. The object returned us substituted via the getString()
  * method.<br/>
  * <br/>
- * <h2>A complete example: is in the test library:ExampleOne.java</h2>
+ * <h2>A complete example: is in the test library:ExampleRepeat.java</h2>
  * </code> <h2>Template control tags:</h2> <h3>The following tags result in
  * additional text from other templates being inserted in to the output</h3>
  * <b>template#</b> - eg: %{template#file_006.html} Include template
@@ -423,7 +423,7 @@ public class Template {
                 Object o = getSubVar(repeatTemplateName, data1, data2);
                 if (o != null) {
                     if (o instanceof String) {
-                        repeatTemplateName = (String)o;
+                        repeatTemplateName = (String) o;
                         o = getSubVar(repeatTemplateName, data1, data2);
                     }
                     if (o instanceof List) {
@@ -738,7 +738,7 @@ public class Template {
                         throw new TemplateException(ignoreException("Failed to get input stream for [" + fileName + "]"));
                     }
                 } else {
-                    if ((fileUrl != null) && (fileUrl.trim().length()>0)) {
+                    if ((fileUrl != null) && (fileUrl.trim().length() > 0)) {
                         fileName = fileUrl + File.separator + localTemplateName;
                     } else {
                         fileName = localTemplateName;
@@ -779,7 +779,7 @@ public class Template {
     protected static final String ignoreException(String message, Exception ex) {
         return ex.getClass().getSimpleName() + ':' + message;
     }
-    
+
     protected static final String ignoreException(String message) {
         return ':' + message;
     }
