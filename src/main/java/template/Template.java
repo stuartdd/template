@@ -45,78 +45,7 @@ import java.util.Properties;
  * for the parameter. The object returned us substituted via the getString()
  * method.<br/>
  * <br/>
- * <h2>A complete example:</h2> For this example a template called file_005.txt
- * is stored in the templates directory
- * <p/>
- * <
- * pre>
- * <code><b>
- * Name value = %{name} Date = %{date} Num = %{num} Java Vendor String =
- * %{java.vm.vendor}. Note this is not provided via the data object. --- Now the
- * multiple lines %{repeat#file_005_1.txt} --- End the multiple lines Num =
- * %{num}
- * </b>
- * </pre>
- * <p/>
- * </code> And a sub (included) template called file_005_1.txt is stored in the
- * same templates directory
- * <p/>
- * <
- * pre>
- * <code><b>
- * Line %{num} of %{numberOfLines} : %{lineText}. Note an EOL is at the end of
- * this file
- *
- * </b>
- * </pre>
- * <p/>
- * </code> The following java segment will tailor file file_005.txt.
- * <p/>
- * <
- * pre>
- * <code><b>
- * HashMap data = new HashMap();
- *
- *       // Set up the template. It is at templates/file_005.txt. Note sub template
- * file_005_1.txt is also there. Template template = new Template("templates",
- * "file_005.txt");
- *
- *       // Simple Object/String sibstitution data.put("name", "Stuart Davies"); //
- * Simple String based substitution. Replace %{name} data.put("date", new
- * Date((long)1234567894)); // Substitute via the toString() method. Replace
- * %{date} data.put("num", 12345); // Java wraps the number value obtained via
- * toString(). Replace %{num}
- *
- *       // Repeated template inclusion int numberOfLines = 5;
- * data.put("numberOfLines",numberOfLines); // Map data included in each line.
- * ArrayList list = new ArrayList(); // Repeated Section for (int i=0;
- * i&lt;numberOfLines; i++) { // Include n instances of a template. HashMap m =
- * new HashMap(); // Create 1 map per template instance m.put("num", i+1); //
- * add some data. Note this num overrides the data num inside repeat
- * m.put("lineText", "Some text from line "+i+1); list.add(m); // Add the Maps
- * to the list } data.put("file_005_1.txt", list); // Add the list to the data.
- * Note the template name. String s = template.parse(data));
- * </b>
- * </pre>
- * <p/>
- * </code> The value assigned to s is as follows:
- * <p/>
- * <
- * pre>
- * <code><b>
- * Name value = Stuart Davies Date = Thu Jan 15 07:56:07 GMT 1970 Num = 12345
- * Java Vendor String = Sun Microsystems Inc.. Note this is not provided via the
- * data object. --- Now the multiple lines Line 1 of 5 : Some text from line 01.
- * Note an EOL is at the end of this file Line 2 of 5 : Some text from line 11.
- * Note an EOL is at the end of this file Line 3 of 5 : Some text from line 21.
- * Note an EOL is at the end of this file Line 4 of 5 : Some text from line 31.
- * Note an EOL is at the end of this file Line 5 of 5 : Some text from line 41.
- * Note an EOL is at the end of this file
- *
- * --- End the multiple lines Num = 12345
- * </b>
- * </pre>
- * <p/>
+ * <h2>A complete example: is in the test library:ExampleOne.java</h2>
  * </code> <h2>Template control tags:</h2> <h3>The following tags result in
  * additional text from other templates being inserted in to the output</h3>
  * <b>template#</b> - eg: %{template#file_006.html} Include template
@@ -201,6 +130,7 @@ public class Template {
 
     private static final Charset UTF_8 = StandardCharsets.UTF_8;
 
+    private static final String RESOURCE_PREFIX = "classpath:";
     private static final String TEMPLATE_STR = "Template";
     private static final String BUNDLE_STR = "Bundle:";
     private static final String IN_STR_MODE = " in String mode";
@@ -210,24 +140,22 @@ public class Template {
     public static final String ERROR_PREFIX = "{{+++ERROR: ";
     public static final String ERROR_SUFFIX = " +++}}";
     public static final String REPEAT_TP = "Repeat template property:";
-    private static String NL = System.getProperty("line.separator");
-    private static char ID_CHAR = '%';
-    private static String ID_STRING = "%";
-    private static String INC = "template#";
-    private static String INC_VAR = "template?";
-    private static String BUNDLE_REF = "bundle#";
-    private static String BUNDLE_VAR = "bundle?";
-    private static String REPEAT = "repeat#";
-    private static String IF_DEF = "ifDef#";
-    private static String IF_UN_DEF = "ifUnDef#";
-    private static String FI = "fi#";
-    private static String SET_VAR = "set#";
-    private static String SET_VAR_VAR = "set?";
-    private static String UN_SET_VAR = "unSet#";
-    private static String PLUGGIN = "pluggin#";
-    private static String LIST_DATA = "listData";
+    private static final String NL = System.getProperty("line.separator");
+    private static final char ID_CHAR = '%';
+    private static final String ID_STRING = "%";
+    private static final String INC = "template#";
+    private static final String INC_VAR = "template?";
+    private static final String BUNDLE_REF = "bundle#";
+    private static final String BUNDLE_VAR = "bundle?";
+    private static final String REPEAT = "repeat#";
+    private static final String IF_DEF = "ifDef#";
+    private static final String IF_UN_DEF = "ifUnDef#";
+    private static final String FI = "fi#";
+    private static final String SET_VAR = "set#";
+    private static final String SET_VAR_VAR = "set?";
+    private static final String UN_SET_VAR = "unSet#";
+    private static final String LIST_DATA = "listData";
     private byte[] fragmentStr;
-    private int fragmentStrPos = 0;
     private int maxIndex;
     private final Deque appendToTemplateStack = new LinkedList();
     private boolean appendToTemplate = true;
@@ -238,7 +166,6 @@ public class Template {
     private boolean loadViaUrl = true;
     private boolean cannotUseInclude = false;
     private static final int VAL_LENGTH = 2;
-    private static final int BITE_SIZE = 500;
 
     private Template() {
     }
@@ -247,17 +174,22 @@ public class Template {
         if (fileName == null) {
             throw new InvalidParameterException("Parameter fileName is null");
         }
-        File template = new File(fileName);
-        if (!template.exists()) {
-            throw new InvalidParameterException(TEMPLATE_STR + " ["
-                    + template.getAbsolutePath() + "] does not exist");
+        if (fileName.startsWith(RESOURCE_PREFIX)) {
+            this.fileUrl = "";
+            this.templateName = fileName;
+        } else {
+            File template = new File(fileName);
+            if (!template.exists()) {
+                throw new InvalidParameterException(TEMPLATE_STR + " ["
+                        + template.getAbsolutePath() + "] does not exist");
+            }
+            if (!template.isFile()) {
+                throw new InvalidParameterException(TEMPLATE_STR + " ["
+                        + template.getAbsolutePath() + "] is not a file");
+            }
+            this.fileUrl = template.getParent();
+            this.templateName = template.getName();
         }
-        if (!template.isFile()) {
-            throw new InvalidParameterException(TEMPLATE_STR + " ["
-                    + template.getAbsolutePath() + "] is not a file");
-        }
-        this.fileUrl = template.getParent();
-        this.templateName = template.getName();
         this.parent = null;
         this.loadViaUrl = false;
         this.fragmentStr = load(this.templateName);
@@ -307,19 +239,12 @@ public class Template {
         Template t = new Template();
         t.fragmentStr = s.getBytes(UTF_8);
         t.maxIndex = t.fragmentStr.length - 1;
-        t.fragmentStrPos = 0;
         t.fileUrl = null;
         t.templateName = null;
         t.parent = null;
         t.loadViaUrl = false;
         t.cannotUseInclude = false;
         return t.parse(map, ignoreUnresolvedSubs);
-    }
-
-    private static byte[] extendArray(byte[] subject, int newLen) {
-        byte[] newByte = new byte[newLen];
-        System.arraycopy(subject, 0, newByte, 0, subject.length);
-        return newByte;
     }
 
     private static String[] split(char ch, String s) {
@@ -329,7 +254,7 @@ public class Template {
             char c = s.charAt(i);
             if (c == ch) {
                 sb0 = sb;
-                sb = new StringBuilder();
+                sb.setLength(0);
             } else {
                 sb.append(c);
             }
@@ -497,6 +422,10 @@ public class Template {
                 String repeatTemplateName = name.substring(REPEAT.length());
                 Object o = getSubVar(repeatTemplateName, data1, data2);
                 if (o != null) {
+                    if (o instanceof String) {
+                        repeatTemplateName = (String)o;
+                        o = getSubVar(repeatTemplateName, data1, data2);
+                    }
                     if (o instanceof List) {
                         List list = (List) o;
                         for (int i = 0; i < list.size(); i++) {
@@ -797,19 +726,25 @@ public class Template {
         InputStream fis = null;
         URL url = null;
         String fileName = null;
-        fragmentStrPos = 0;
         try {
             if (loadViaUrl) {
                 fileName = fileUrl + "/" + localTemplateName;
                 url = new URL(fileName);
                 fis = url.openStream();
             } else {
-                if (fileUrl != null) {
-                    fileName = fileUrl + File.separator + localTemplateName;
+                if (localTemplateName.startsWith(RESOURCE_PREFIX)) {
+                    fis = this.getClass().getResourceAsStream(localTemplateName.substring(RESOURCE_PREFIX.length()));
+                    if (fis == null) {
+                        throw new TemplateException(ignoreException("Failed to get input stream for [" + fileName + "]"));
+                    }
                 } else {
-                    fileName = localTemplateName;
+                    if ((fileUrl != null) && (fileUrl.trim().length()>0)) {
+                        fileName = fileUrl + File.separator + localTemplateName;
+                    } else {
+                        fileName = localTemplateName;
+                    }
+                    fis = new FileInputStream(fileName);
                 }
-                fis = new FileInputStream(fileName);
             }
             return loadFromStream(fis, fileName);
         } catch (IOException io) {
@@ -826,21 +761,9 @@ public class Template {
 
     protected byte[] loadFromStream(InputStream fis, String fileName) {
         try {
-            byte[] buffer = new byte[BITE_SIZE];
-            byte[] sb = new byte[BITE_SIZE];
-            int bytesRead = fis.read(buffer);
-            while (bytesRead > 0) {
-                if ((fragmentStrPos + bytesRead) > sb.length) {
-                    sb = extendArray(sb, sb.length + bytesRead);
-                }
-                System.arraycopy(buffer, 0, sb, 0, bytesRead);
-                bytesRead = fis.read(buffer);
-            }
-            if ((fragmentStrPos + 1) > sb.length) {
-                sb = extendArray(sb, sb.length + 1);
-            }
-            sb[fragmentStrPos] = (byte) 0;
-            return sb;
+            byte[] targetArray = new byte[fis.available()];
+            fis.read(targetArray);
+            return targetArray;
         } catch (IOException io) {
             throw new TemplateException(ignoreException("Failed to read input stream for [" + fileName + "] " + io.getMessage(), io));
         } finally {
@@ -848,13 +771,17 @@ public class Template {
                 if (fis != null) {
                     fis.close();
                 }
-            } catch (IOException io) {   
+            } catch (IOException io) {
             }
         }
     }
 
     protected static final String ignoreException(String message, Exception ex) {
         return ex.getClass().getSimpleName() + ':' + message;
+    }
+    
+    protected static final String ignoreException(String message) {
+        return ':' + message;
     }
 
 }

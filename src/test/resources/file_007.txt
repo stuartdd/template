@@ -4,5 +4,5 @@ Num = %{num}
 Java Vendor String = %{java.vm.vendor}. Note 
 this is not provided via the data object. 
 --- Now the multiple lines 
-%{repeat#file_005_1.txt}--- End the multiple lines 
+%{repeat#src/test/resources/file_005_1.txt}--- End the multiple lines 
 Num = %{num}
