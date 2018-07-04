@@ -696,6 +696,7 @@ public class Template {
     private Properties loadBundle(String localBundleName)
             throws TemplateException {
         Properties p = new Properties();
+        InputStream fis = null;
         String fileName = null;
         URL url = null;
         try {
@@ -704,14 +705,20 @@ public class Template {
                 url = new URL(fileName);
                 p.load(url.openStream());
             } else {
-                if (fileUrl != null) {
-                    fileName = fileUrl + File.separator + localBundleName;
+                if (localBundleName.startsWith(RESOURCE_PREFIX)) {
+                    fis = this.getClass().getResourceAsStream(localBundleName.substring(RESOURCE_PREFIX.length()));
+                    if (fis == null) {
+                        throw new TemplateException(ignoreException("Failed to get input stream for [" + fileName + "]"));
+                    }
                 } else {
-                    fileName = localBundleName;
+                    if ((fileUrl != null) && (fileUrl.trim().length() > 0)) {
+                        fileName = fileUrl + File.separator + localBundleName;
+                    } else {
+                        fileName = localBundleName;
+                    }
+                    fis = new FileInputStream(fileName);
                 }
-                try (FileInputStream fis = new FileInputStream(fileName)) {
-                    p.load(fis);
-                }
+                p.load(fis);
             }
         } catch (IOException ex) {
             throw new TemplateException(ignoreException("Failed to load bundle at [" + fileName + "] " + ex.getMessage(), ex));

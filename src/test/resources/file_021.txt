@@ -1,0 +1,6 @@
+Load the bundle. %{bundle#bundle.properties}
+Name value = %{name}. Note name is NOT from the bundle!
+Date = %{date} 
+Num = %{num} 
+Java Vendor String = %{java.vm.vendor}. Note this is not provided via the data object. 
+>>>%{template?subFile}<<<
