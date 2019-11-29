@@ -40,9 +40,6 @@ public class ExampleRepeat {
 
     @Test
     public void testOne_File() {
-        for (Map.Entry<Object, Object> s:System.getProperties().entrySet()) {
-            System.err.println(s);
-        }
         assertEquals("Result", EXPECTED, testRepeatWithTwoFiles("src/test/resources/file_005.txt", "file_005_1.txt"));
     }
 
