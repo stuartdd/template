@@ -29,7 +29,7 @@ public class ExampleRepeat {
     private static final String EXPECTED = "Name value = Jo Bloggs \n"
             + "Date = Thu Jan 15 07:56:07 GMT 1970 \n"
             + "Num = 12345 \n"
-            + "Java Vendor String = Oracle Corporation. Note \n"
+            + "Java Version = 11. Note \n"
             + "this is not provided via the data object. \n"
             + "--- Now the multiple lines \n"
             + " Line 1 of 3 : Some text from line 1. Note there is a new line at the end of this file\n"
@@ -40,6 +40,9 @@ public class ExampleRepeat {
 
     @Test
     public void testOne_File() {
+        for (Map.Entry<Object, Object> s:System.getProperties().entrySet()) {
+            System.err.println(s);
+        }
         assertEquals("Result", EXPECTED, testRepeatWithTwoFiles("src/test/resources/file_005.txt", "file_005_1.txt"));
     }
 

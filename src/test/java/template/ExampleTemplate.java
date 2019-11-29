@@ -23,45 +23,52 @@ import org.junit.Test;
 
 public class ExampleTemplate {
 
-    private static final String EXPECTED = "Name value = Jo Bloggs \n"
-            + "Java Vendor String = Oracle Corporation. Note this is not provided via the data object. \n"
-            + ">>>Import value = Jo Bloggs<<<";
+    private static final String EXPECTED = "Name value = Jo Bloggs Java Version = 11. Note this is not provided via the data object. >>>Import value = Jo Bloggs<<<";
 
     @Test
     public void testImportFile() {
-        assertEquals("", EXPECTED, testImport("src/test/resources/file_010.txt"));
+        assertEquals("", EXPECTED, clean(testImport("src/test/resources/file_010.txt")));
     }
 
     @Test
     public void testClasspathMain() {
-        assertEquals("", EXPECTED, testImport("classpath:/file_011.txt"));
+        assertEquals("", EXPECTED, clean(testImport("classpath:/file_011.txt")));
     }
 
     @Test
     public void testClasspathClasspath() {
-        assertEquals("", EXPECTED, testImport("classpath:/file_012.txt"));
+        assertEquals("", EXPECTED, clean(testImport("classpath:/file_012.txt")));
     }
     
     @Test
     public void testClasspathDefered() {
-        assertEquals("", EXPECTED, testImportDefered("classpath:/file_013.txt", "classpath:/file_010_1.txt"));
+        assertEquals("", EXPECTED, clean(testImportDefered("classpath:/file_013.txt", "classpath:/file_010_1.txt")));
     }
     
     @Test
     public void testClasspathFileDefered() {
-        assertEquals("", EXPECTED, testImportDefered("classpath:/file_013.txt", "src/test/resources/file_010_1.txt"));
+        assertEquals("", EXPECTED, clean(testImportDefered("classpath:/file_013.txt", "src/test/resources/file_010_1.txt")));
     }
     
     @Test
     public void testFileFileDefered() {
-        assertEquals("", EXPECTED, testImportDefered("src/test/resources/file_013.txt", "file_010_1.txt"));
+        assertEquals("", EXPECTED, clean(testImportDefered("src/test/resources/file_013.txt", "file_010_1.txt")));
     }
 
     @Test
     public void testFileClasspathDefered() {
-        assertEquals("", EXPECTED, testImportDefered("src/test/resources/file_013.txt", "classpath:/file_010_1.txt"));
+        assertEquals("", EXPECTED, clean(testImportDefered("src/test/resources/file_013.txt", "classpath:/file_010_1.txt")));
     }
 
+    private String clean(String s) {
+        StringBuilder sb = new StringBuilder();
+        for (char c:s.toCharArray()) {
+            if (c >= ' ') {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
     public String testImport(String mainFile) {
         /*
         Create a map with the data in it
